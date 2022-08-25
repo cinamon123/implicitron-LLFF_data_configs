@@ -1,0 +1,163 @@
+data_source_class_type: ImplicitronDataSource
+model_factory_class_type: ImplicitronModelFactory
+optimizer_factory_class_type: ImplicitronOptimizerFactory
+training_loop_class_type: ImplicitronTrainingLoop
+seed: 42
+detect_anomaly: false
+exp_dir: pytorch3d/projects/implicitron_trainer/checkpoint
+data_source_ImplicitronDataSource_args:
+  dataset_map_provider_class_type: LlffDatasetMapProvider
+  data_loader_map_provider_class_type: SequenceDataLoaderMapProvider
+  dataset_map_provider_LlffDatasetMapProvider_args:
+    base_dir: llffdata/fern
+    object_name: fern
+    path_manager_factory_class_type: PathManagerFactory
+    n_known_frames_for_test: null
+    path_manager_factory_PathManagerFactory_args:
+      silence_logs: true
+    downscale_factor: 4
+  data_loader_map_provider_SequenceDataLoaderMapProvider_args:
+    batch_size: 1
+    num_workers: 8
+    dataset_length_train: 1000
+    dataset_length_val: 1
+    dataset_length_test: 0
+    train_conditioning_type: SAME
+    val_conditioning_type: SAME
+    test_conditioning_type: KNOWN
+    images_per_seq_options: []
+    sample_consecutive_frames: false
+    consecutive_frames_max_gap: 0
+    consecutive_frames_max_gap_seconds: 0.1
+model_factory_ImplicitronModelFactory_args:
+  resume: true
+  model_class_type: GenericModel
+  resume_epoch: -1
+  force_resume: false
+  model_GenericModel_args:
+    log_vars:
+    - loss_rgb_psnr_fg
+    - loss_rgb_psnr
+    - loss_rgb_mse
+    - loss_rgb_huber
+    - loss_depth_abs
+    - loss_depth_abs_fg
+    - loss_mask_neg_iou
+    - loss_mask_bce
+    - loss_mask_beta_prior
+    - loss_eikonal
+    - loss_density_tv
+    - loss_depth_neg_penalty
+    - loss_autodecoder_norm
+    - loss_prev_stage_rgb_mse
+    - loss_prev_stage_rgb_psnr_fg
+    - loss_prev_stage_rgb_psnr
+    - loss_prev_stage_mask_bce
+    - objective
+    - epoch
+    - sec/it
+    mask_images: true
+    mask_depths: true
+    render_image_width: 400
+    render_image_height: 400
+    mask_threshold: 0.5
+    output_rasterized_mc: false
+    bg_color:
+    - 0.0
+    - 0.0
+    - 0.0
+    num_passes: 2
+    chunk_size_grid: 102400
+    render_features_dimensions: 3
+    tqdm_trigger_threshold: 16
+    n_train_target_views: 1
+    sampling_mode_training: mask_sample
+    sampling_mode_evaluation: full_grid
+    global_encoder_class_type: null
+    raysampler_class_type: AdaptiveRaySampler
+    renderer_class_type: MultiPassEmissionAbsorptionRenderer
+    image_feature_extractor_class_type: null
+    view_pooler_enabled: false
+    implicit_function_class_type: NeuralRadianceFieldImplicitFunction
+    view_metrics_class_type: ViewMetrics
+    regularization_metrics_class_type: RegularizationMetrics
+    loss_weights:
+      loss_rgb_mse: 1.0
+      loss_prev_stage_rgb_mse: 1.0
+      loss_mask_bce: 1.0
+      loss_prev_stage_mask_bce: 1.0
+      loss_autodecoder_norm: 0.01
+    raysampler_AdaptiveRaySampler_args:
+      n_pts_per_ray_training: 64
+      n_pts_per_ray_evaluation: 64
+      n_rays_per_image_sampled_from_mask: 1024
+      stratified_point_sampling_training: true
+      stratified_point_sampling_evaluation: false
+      scene_extent: 8.0
+      scene_center:
+      - 0.0
+      - 0.0
+      - 0.0
+    renderer_MultiPassEmissionAbsorptionRenderer_args:
+      raymarcher_class_type: EmissionAbsorptionRaymarcher
+      n_pts_per_ray_fine_training: 64
+      n_pts_per_ray_fine_evaluation: 64
+      stratified_sampling_coarse_training: true
+      stratified_sampling_coarse_evaluation: false
+      append_coarse_samples_to_fine: true
+      density_noise_std_train: 1.0
+      return_weights: false
+      raymarcher_EmissionAbsorptionRaymarcher_args:
+        surface_thickness: 1
+        bg_color:
+        - 0.0
+        background_opacity: 10000000000.0
+        density_relu: true
+        blend_output: false
+    implicit_function_NeuralRadianceFieldImplicitFunction_args:
+      n_harmonic_functions_xyz: 10
+      n_harmonic_functions_dir: 4
+      n_hidden_neurons_dir: 128
+      input_xyz: true
+      xyz_ray_dir_in_camera_coords: false
+      transformer_dim_down_factor: 1.0
+      n_hidden_neurons_xyz: 256
+      n_layers_xyz: 8
+      append_xyz:
+      - 5
+    view_metrics_ViewMetrics_args: {}
+    regularization_metrics_RegularizationMetrics_args: {}
+optimizer_factory_ImplicitronOptimizerFactory_args:
+  betas:
+  - 0.9
+  - 0.999
+  breed: Adam
+  exponential_lr_step_size: 250
+  gamma: 0.1
+  lr: 0.0005
+  lr_policy: MultiStepLR
+  momentum: 0.9
+  multistep_lr_milestones: []
+  weight_decay: 0.0
+  linear_exponential_lr_milestone: 200
+  linear_exponential_start_gamma: 0.1
+training_loop_ImplicitronTrainingLoop_args:
+  eval_only: false
+  evaluator_class_type: ImplicitronEvaluator
+  max_epochs: 1000
+  store_checkpoints: true
+  store_checkpoints_purge: 1
+  test_interval: -1
+  test_when_finished: false
+  validation_interval: 1
+  clip_grad: 0.0
+  metric_print_interval: 5
+  visualize_interval: 0
+  visdom_env: ''
+  visdom_port: 8097
+  visdom_server: http://127.0.0.1
+  evaluator_ImplicitronEvaluator_args:
+    camera_difficulty_bin_breaks:
+    - 0.97
+    - 0.98
+    is_multisequence: false
